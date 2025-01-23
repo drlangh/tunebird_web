@@ -1,4 +1,4 @@
-import Google from '@public/logos/google.svg';
+import Spotify from '@public/logos/spotify.svg';
 import { signIn } from '@/auth';
 
 export default function LoginForm() {
@@ -11,12 +11,12 @@ export default function LoginForm() {
       <form
         action={async () => {
           'use server';
-          await signIn('google', { redirectTo: '/play' });
+          await signIn('spotify', { redirectTo: '/play' });
         }}
       >
-        <button className="google mt-8 flex w-full justify-center items-center gap-2 rounded-lg border border-gray-300 p-2 bg-transparent hover:border-2 hover:border-white">
-          <Google />
-          Continue with Google
+        <button className="except mt-8 flex w-full justify-center items-center gap-2 rounded-lg border border-gray-300 p-2 bg-transparent hover:border-2 hover:border-white">
+          <Spotify className="w-6" />
+          Continue with Spotify
         </button>
       </form>
 

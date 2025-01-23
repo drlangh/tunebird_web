@@ -1,5 +1,12 @@
-import { FaHome, FaCompass, FaRobot, FaPlus, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { HiOutlineCog8Tooth } from 'react-icons/hi2';
+import {
+  LuCompass,
+  LuHouse,
+  LuLogOut,
+  LuSparkles,
+} from 'react-icons/lu';
 import UserAvatar from './session/UserAvatar';
+import { signOut } from '@/auth';
 
 const Sidebar = () => {
   const playlists = ['Playlist 1', 'Playlist 2', 'Playlist 3'];
@@ -13,26 +20,28 @@ const Sidebar = () => {
       <nav className="flex-1">
         <ul>
           <li className="flex items-center p-4 hover:bg-gray-700">
-            <FaHome className="mr-4" />
+            <LuHouse className="mr-4" />
             Home
           </li>
           <li className="flex items-center p-4 hover:bg-gray-700">
-            <FaCompass className="mr-4" />
+            <LuCompass className="mr-4" />
             Explore
           </li>
           <li className="flex items-center p-4 hover:bg-gray-700">
-            <FaRobot className="mr-4" />
+            <LuSparkles className="mr-4" />
             AI
           </li>
         </ul>
         <hr className="my-4 border-gray-700" />
         <button className="flex items-center p-4 w-full hover:bg-gray-700">
-          <FaPlus className="mr-4" />
           Create Playlist
         </button>
         <ul>
           {playlists.map((playlist, index) => (
-            <li key={index} className="flex items-center p-4 hover:bg-gray-700">
+            <li
+              key={index}
+              className="flex items-center p-4 hover:bg-gray-700"
+            >
               {playlist}
             </li>
           ))}
@@ -41,12 +50,21 @@ const Sidebar = () => {
       <hr className="my-4 border-gray-700" />
       <ul>
         <li className="flex items-center p-4 hover:bg-gray-700">
-          <FaCog className="mr-4" />
+          <HiOutlineCog8Tooth className="mr-4" />
           Settings
         </li>
-        <li className="flex items-center p-4 hover:bg-gray-700">
-          <FaSignOutAlt className="mr-4" />
-          Log Out
+        <li>
+          <form
+            action={async () => {
+              'use server';
+              await signOut();
+            }}
+          >
+            <button className="except w-full flex items-center p-4 hover:bg-gray-700">
+              <LuLogOut className="mr-4" />
+              Log Out
+            </button>
+          </form>
         </li>
       </ul>
     </div>

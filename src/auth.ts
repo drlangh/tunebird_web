@@ -3,8 +3,7 @@
  * Supports both Google OAuth and credentials-based authentication
  */
 import NextAuth from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import Spotify from 'next-auth/providers/spotify';
 
 import type { AuthOptions } from 'next-auth';
 
@@ -32,53 +31,61 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   providers: [
     /**
-     * Google OAuth provider configuration
-     * Requires GOOGLE_ID and GOOGLE_SECRET environment variables
-     * Uses offline access for refresh tokens and explicit consent prompt
+     * Spotify OAuth provider configuration
+     * Requires SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables
      */
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_SECRET as string,
-      authorization: {
-        params: {
-          prompt: 'consent',
-          access_type: 'offline',
-          response_type: 'code',
-        },
-      },
+    Spotify({
+      clientId: process.env.SPOTIFY_CLIENT_ID as string,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET as string,
     }),
-    /**
-     * Credentials provider for username/password authentication
-     * Provides a basic form with username and password fields
-     */
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        username: {
-          label: 'Username',
-          type: 'text',
-        },
-        password: { label: 'Password', type: 'password' },
-      },
-      /**
-       * Authorization function for credentials validation
-       * @param credentials - Object containing username and password
-       * @param req - NextAuth request object
-       * @returns User object if authenticated, null if invalid
-       */
-      async authorize(credentials, req) {
-        const res = await fetch('/your/endpoint', {
-          method: 'POST',
-          body: JSON.stringify(credentials),
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const user = await res.json();
+    // /**
+    //  * Google OAuth provider configuration
+    //  * Requires GOOGLE_ID and GOOGLE_SECRET environment variables
+    //  * Uses offline access for refresh tokens and explicit consent prompt
+    //  */
+    // GoogleProvider({
+    //   clientId: process.env.GOOGLE_CLIENT_ID as string,
+    //   clientSecret: process.env.GOOGLE_SECRET as string,
+    //   authorization: {
+    //     params: {
+    //       prompt: 'consent',
+    //       access_type: 'offline',
+    //       response_type: 'code',
+    //     },
+    //   },
+    // }),
+    // /**
+    //  * Credentials provider for username/password authentication
+    //  * Provides a basic form with username and password fields
+    //  */
+    // CredentialsProvider({
+    //   name: 'Credentials',
+    //   credentials: {
+    //     username: {
+    //       label: 'Username',
+    //       type: 'text',
+    //     },
+    //     password: { label: 'Password', type: 'password' },
+    //   },
+    //   /**
+    //    * Authorization function for credentials validation
+    //    * @param credentials - Object containing username and password
+    //    * @param req - NextAuth request object
+    //    * @returns User object if authenticated, null if invalid
+    //    */
+    //   async authorize(credentials, req) {
+    //     const res = await fetch('/your/endpoint', {
+    //       method: 'POST',
+    //       body: JSON.stringify(credentials),
+    //       headers: { 'Content-Type': 'application/json' },
+    //     });
+    //     const user = await res.json();
 
-        if (res.ok && user) {
-          return user;
-        }
-        return null;
-      },
-    }),
+    //     if (res.ok && user) {
+    //       return user;
+    //     }
+    //     return null;
+    //   },
+    // }),
   ],
 } satisfies AuthOptions);
