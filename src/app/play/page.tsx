@@ -1,20 +1,26 @@
-import { signOut } from '@/auth';
-import UserAvatar from '../components/session/UserAvatar';
+import { auth } from '@/auth';
+import MainContent from '../components/MainContent';
 
-export default function Play() {
+import type SessionJWT from '@/types/session';
+import getSpotifyRecommendations from '../api/ai/getSpotifyRecommendations';
+
+export default async function Play() {
+  const session = (await auth()) as SessionJWT;
+
+  if (!session) {
+    return null;
+  }
+
+  const a = await getSpotifyRecommendations('happy');
+  console.log(a);
+
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg">
-      <form
-        action={async () => {
-          'use server';
-          await signOut();
-        }}
-      >
-        <button type="submit">Sign Out</button>
-      </form>
+    <>
+      <MainContent />
 
-      <UserAvatar />
-      <h1 className="text-4xl font-bold">Play</h1>
-    </div>
+      {/* {provider === 'spotify' && (
+        <SpotifyPlayer token={session.token.access_token} />
+      )} */}
+    </>
   );
 }

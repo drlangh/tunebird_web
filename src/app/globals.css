@@ -13,7 +13,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-button:not(.google) {
+button:not(.except) {
   width: 100%;
   display: flex;
   justify-content: center;
