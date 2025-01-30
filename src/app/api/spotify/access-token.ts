@@ -1,6 +1,6 @@
 function generateCodeVerifier(length: number) {
   let text = '';
-  let possible =
+  const possible =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
   for (let i = 0; i < length; i++) {
@@ -11,11 +11,10 @@ function generateCodeVerifier(length: number) {
   return text;
 }
 
-async function getAccessToken(code: string): Promise<string> {
+async function getSpotifyAccessToken(code: string): Promise<string> {
   const verifier = generateCodeVerifier(128);
 
   const params = new URLSearchParams();
-  params.append('client_id', process.env.SPOTIFY_CLIENT_ID!);
   params.append('grant_type', 'authorization_code');
   params.append('code', code);
   params.append(
@@ -30,6 +29,13 @@ async function getAccessToken(code: string): Promise<string> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization:
+          'Basic ' +
+          Buffer.from(
+            process.env.SPOTIFY_CLIENT_ID +
+              ':' +
+              process.env.SPOTIFY_CLIENT_SECRET
+          ).toString('base64'),
       },
       body: params,
     }
@@ -38,3 +44,5 @@ async function getAccessToken(code: string): Promise<string> {
   const { access_token } = await result.json();
   return access_token;
 }
+
+export default getSpotifyAccessToken;

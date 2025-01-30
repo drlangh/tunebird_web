@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@svgr/webpack": "^8.1.0",
+    "ai": "^4.1.5",
     "next": "15.1.6",
     "next-auth": "5.0.0-beta.25",
     "react": "^19.0.0",
