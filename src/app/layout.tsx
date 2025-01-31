@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Lexend } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
+import Head from 'next/head';
 
 const fonarto = localFont({
   src: [
@@ -31,8 +32,7 @@ const lexend = Lexend({
 
 export const metadata: Metadata = {
   title: 'Tunebird',
-  description:
-    'A music player that helps you discover new music through AI',
+  description: 'The music game where the music never stops.',
 };
 
 export default function RootLayout({
@@ -41,9 +41,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-dvh">
+      <Head>
+        <meta
+          http-equiv="ScreenOrientation"
+          content="autoRotate:disabled"
+        />
+      </Head>
       <body
-        className={`${fonarto.style} ${lexend.className} antialiased`}
+        className={`${fonarto.style} ${lexend.className} antialiased h-full`}
       >
         {children}
       </body>
