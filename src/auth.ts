@@ -1,17 +1,17 @@
 /**
  * NextAuth configuration for authentication handling
- * Supports both Google OAuth and credentials-based authentication
+ * Supports Spotify Authenthication
  */
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { PrismaClient } from '@prisma/client';
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Spotify from 'next-auth/providers/spotify';
-import { PrismaClient } from '@prisma/client';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 
 import type { NextAuthConfig } from 'next-auth';
 
-import { PrismaNeon } from '@prisma/adapter-neon';
 import { Pool } from '@neondatabase/serverless';
+import { PrismaNeon } from '@prisma/adapter-neon';
 
 const neon = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -57,11 +57,65 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      */
     async jwt({ token, account }) {
       if (account) {
-        token.access_token = account.access_token;
-        token.expires_in = account.expires_in;
-        token.provider = account.provider;
+        const expires_in = account.expires_in
+          ? Math.floor(Date.now() / 1000 + account.expires_in)
+          : undefined;
+
+        return {
+          ...token,
+          access_token: account.access_token,
+          expires_at: expires_in,
+          refresh_token: account.refresh_token,
+        };
+      } else if (
+        typeof token.expires_at === 'number' &&
+        Date.now() / 1000 < token.expires_at
+      ) {
+        return token;
+      } else {
+        if (
+          !token.refresh_token ||
+          typeof token.refresh_token !== 'string'
+        ) {
+          console.error('Missing or invalid refresh_token');
+          return { ...token, error: 'RefreshTokenError' };
+        }
+
+        try {
+          const response = await fetch(
+            'https://accounts.spotify.com/api/token',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: `Basic ${Buffer.from(
+                  `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+                ).toString('base64')}`,
+              },
+              body: new URLSearchParams({
+                grant_type: 'refresh_token',
+                refresh_token: token.refresh_token,
+              }),
+            }
+          );
+
+          const newTokens = await response.json();
+          if (!response.ok) throw newTokens;
+
+          return {
+            ...token,
+            access_token: newTokens.access_token,
+            expires_at: Math.floor(
+              Date.now() / 1000 + newTokens.expires_in
+            ),
+            refresh_token:
+              newTokens.refresh_token || token.refresh_token, // Si no devuelve uno nuevo, conservar el anterior
+          };
+        } catch (error) {
+          console.error('Error refreshing access_token', error);
+          return { ...token, error: 'RefreshTokenError' };
+        }
       }
-      return token;
     },
 
     /**
@@ -72,7 +126,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       return {
         ...session,
-        token,
+        access_token: token.access_token,
+        error: token.error || null,
       };
     },
   },
@@ -91,7 +146,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // /**
     //  * Google OAuth provider configuration
     //  * Requires GOOGLE_ID and GOOGLE_SECRET environment variables
-    //  * Uses offline access for refresh tokens and explicit consent prompt
+    //  * Uses offline access for refre tokens and explicit consent prompt
     //  */
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -104,38 +159,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
     }),
-    // /**
-    //  * Credentials provider for username/password authentication
-    //  * Provides a basic form with username and password fields
-    //  */
-    // CredentialsProvider({
-    //   name: 'Credentials',
-    //   credentials: {
-    //     username: {
-    //       label: 'Username',
-    //       type: 'text',
-    //     },
-    //     password: { label: 'Password', type: 'password' },
-    //   },
-    //   /**
-    //    * Authorization function for credentials validation
-    //    * @param credentials - Object containing username and password
-    //    * @param req - NextAuth request object
-    //    * @returns User object if authenticated, null if invalid
-    //    */
-    //   async authorize(credentials, req) {
-    //     const res = await fetch('/your/endpoint', {
-    //       method: 'POST',
-    //       body: JSON.stringify(credentials),
-    //       headers: { 'Content-Type': 'application/json' },
-    //     });
-    //     const user = await res.json();
-
-    //     if (res.ok && user) {
-    //       return user;
-    //     }
-    //     return null;
-    //   },
-    // }),
   ],
 } satisfies NextAuthConfig);
