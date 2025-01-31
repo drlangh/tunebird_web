@@ -1,25 +1,19 @@
-'use client';
-
 import { signIn } from '@/auth';
 import Spotify from '@public/logos/spotify.svg';
-import { useState } from 'react';
 
 export default function LoginForm() {
-  const [roomId, setRoomId] = useState('');
-  const [playerName, setPlayerName] = useState('');
+  // const handleJoinRoom = async () => {
+  //   const response = await fetch('/api/game/join', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ roomId, playerName }),
+  //   });
 
-  const handleJoinRoom = async () => {
-    const response = await fetch('/api/game/join', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ roomId, playerName }),
-    });
-
-    const data = await response.json();
-    // Handle the response data as needed
-  };
+  //   const data = await response.json();
+  //   // Handle the response data as needed
+  // };
 
   return (
     <div className="flex w-full h-fit py-2 flex-col items-center justify-center gap-4">
@@ -40,23 +34,7 @@ export default function LoginForm() {
       </form>
 
       <div className="w-full">
-        <input
-          type="text"
-          value={roomId}
-          onChange={(e) => setRoomId(e.target.value)}
-          placeholder="Room ID"
-          className="glass-input"
-        />
-        <input
-          type="text"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="Player Name"
-          className="glass-input"
-        />
-        <button onClick={handleJoinRoom} className="glass-button">
-          Join a room
-        </button>
+        <button className="glass-button">Join a room</button>
       </div>
     </div>
   );

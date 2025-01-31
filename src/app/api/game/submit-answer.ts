@@ -2,7 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
 import { io } from '@/server/socket';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method === 'POST') {
     const { roomId, playerId, answer } = req.body;
 
@@ -23,8 +26,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Validate the answer and update player scores
-      const isCorrect = validateAnswer(answer, gameRoom.currentQuestion);
-      const updatedScore = isCorrect ? player.score + 1 : player.score;
+      const isCorrect = validateAnswer(
+        answer,
+        gameRoom.currentQuestion
+      );
+      const updatedScore = isCorrect
+        ? player.score + 1
+        : player.score;
 
       await prisma.player.update({
         where: { id: playerId },
@@ -32,7 +40,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       // Notify all players about the updated game state
-      io.to(roomId).emit('answerSubmitted', { playerId, updatedScore });
+      io.to(roomId).emit('answerSubmitted', {
+        playerId,
+        updatedScore,
+      });
 
       res.status(200).json({ playerId, updatedScore });
     } catch (error) {
@@ -43,7 +54,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function validateAnswer(answer: string, currentQuestion: any): boolean {
+function validateAnswer(
+  answer: string,
+  currentQuestion: any
+): boolean {
   // Implement your answer validation logic here
   return answer === currentQuestion.correctAnswer;
 }

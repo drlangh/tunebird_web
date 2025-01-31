@@ -1,33 +1,29 @@
-'use client';
+// 'use client';
 
-import { auth } from '@/auth';
-import MainContent from '../components/MainContent';
-import { useState, useEffect } from 'react';
-import { io } from '@/server/socket';
+import { signOut } from '@/auth';
 
-import type SessionJWT from '@/types/session';
+type GameState = any;
 
-export default async function Play() {
-  const session = (await auth()) as SessionJWT;
-  const [gameState, setGameState] = useState(null);
-  const [roomId, setRoomId] = useState('');
-  const [playerName, setPlayerName] = useState('');
+export default function Play() {
+  // const [gameState, setGameState] = useState<GameState | null>(null);
+  // const [roomId, setRoomId] = useState('');
+  // const [playerName, setPlayerName] = useState('');
 
-  useEffect(() => {
-    const socket = io();
+  // useEffect(() => {
+  //   const socket = io();
 
-    socket.on('connect', () => {
-      console.log('Connected to socket server');
-    });
+  //   socket.on('connect', () => {
+  //     console.log('Connected to socket server');
+  //   });
 
-    socket.on('gameStateUpdate', (newGameState) => {
-      setGameState(newGameState);
-    });
+  //   socket.on('gameStateUpdate', (newGameState) => {
+  //     setGameState(newGameState);
+  //   });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
 
   const handleCreateRoom = async () => {
     const response = await fetch('/api/game/create', {
@@ -35,11 +31,13 @@ export default async function Play() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ settings: { rounds: 5, mode: 'Guess That Snippet' } }),
+      body: JSON.stringify({
+        settings: { rounds: 5, mode: 'Guess That Snippet' },
+      }),
     });
 
     const data = await response.json();
-    setRoomId(data.gameRoomId);
+    setRoomId(data.roomId);
   };
 
   const handleJoinRoom = async () => {
@@ -71,35 +69,42 @@ export default async function Play() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ roomId, playerId: session.token.sub, answer }),
+      body: JSON.stringify({
+        roomId,
+        playerId: session.token.sub,
+        answer,
+      }),
     });
   };
 
-  if (!session) {
-    return null;
-  }
-
   return (
-    <>
-      <MainContent />
-      <div>
-        <button onClick={handleCreateRoom}>Create Room</button>
-        <input
-          type="text"
-          value={roomId}
-          onChange={(e) => setRoomId(e.target.value)}
-          placeholder="Room ID"
-        />
-        <input
-          type="text"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="Player Name"
-        />
-        <button onClick={handleJoinRoom}>Join Room</button>
-        <button onClick={handleStartGame}>Start Game</button>
-        <button onClick={() => handleSubmitAnswer('example answer')}>Submit Answer</button>
-      </div>
-    </>
+    <div>
+      <form
+        action={async () => {
+          'use server';
+          await signOut();
+        }}
+        className="w-full"
+      >
+        <button>LOGOUT</button>
+      </form>
+      {/* <button>Create Room</button>
+      <input
+        type="text"
+        value={roomId}
+        placeholder="Room ID"
+        onChange={(e) => {
+          setRoomId(e.target.value);
+        }}
+      />
+      <input
+        type="text"
+        value={playerName}
+        placeholder="Player Name"
+      />
+      <button>Join Room</button>
+      <button>Start Game</button>
+      <button>Submit Answer</button> */}
+    </div>
   );
 }

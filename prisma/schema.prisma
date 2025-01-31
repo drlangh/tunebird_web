@@ -1,0 +1,119 @@
+/// Database schema for a multiplayer game application
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// User: Represents application users with authentication and game participation details
+/// - Linked to authentication data through Account and Session models
+/// - Can host games (GameHost relation) and participate in games (GamePlayers relation)
+/// - Tracks mission completion and scores
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  hostedGames   Game[]    @relation(name: "GameHost")
+  games         Game[]    @relation("GamePlayers")
+  Mission       Mission[] @relation("MissionCompletedBy")
+  Score         Score[]
+  createdAt     DateTime  @default(now())
+}
+
+/// Account: Handles OAuth authentication details
+/// - Stores provider-specific authentication data
+/// - Links to User through userId
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+/// Session: Manages user sessions
+/// - Tracks session tokens and expiration
+/// - Links to User through userId
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+/// VerificationToken: Handles email verification
+/// - Stores temporary tokens for email verification process
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+/// Game: Represents a game instance
+/// - Has a host (User) and multiple players
+/// - Tracks game mode, rounds, and status
+/// - Contains scores and missions
+model Game {
+  id        String    @id @default(uuid())
+  hostId    String
+  host      User      @relation(fields: [hostId], references: [id], name: "GameHost")
+  players   User[]    @relation("GamePlayers")
+  mode      String
+  rounds    Int
+  status    String
+  scores    Score[]
+  missions  Mission[]
+  createdAt DateTime  @default(now())
+}
+
+/// Score: Tracks points for players in games
+/// - Links game instance and user
+/// - Stores point value
+model Score {
+  id     String @id @default(uuid())
+  gameId String
+  game   Game   @relation(fields: [gameId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  points Int
+}
+
+/// Mission: Represents game missions/tasks
+/// - Belongs to a game instance
+/// - Tracks users who completed the mission
+/// - Contains mission description
+model Mission {
+  id          String @id @default(uuid())
+  gameId      String
+  game        Game   @relation(fields: [gameId], references: [id])
+  description String
+  completedBy User[] @relation("MissionCompletedBy")
+}
