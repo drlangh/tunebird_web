@@ -1,11 +1,10 @@
 /**
  * NextAuth configuration for authentication handling
- * Supports Spotify Authenthication
+ * Supports Spotify OAuth provider
  */
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
 import NextAuth from 'next-auth';
-import Google from 'next-auth/providers/google';
 import Spotify from 'next-auth/providers/spotify';
 
 import type { NextAuthConfig } from 'next-auth';
@@ -142,22 +141,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         'https://accounts.spotify.com/authorize?scope=user-read-email,playlist-read-private,playlist-modify-private,playlist-modify-public,user-read-playback-state,user-modify-playback-state,user-read-currently-playing,streaming,user-read-private',
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-    }),
-    // /**
-    //  * Google OAuth provider configuration
-    //  * Requires GOOGLE_ID and GOOGLE_SECRET environment variables
-    //  * Uses offline access for refre tokens and explicit consent prompt
-    //  */
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_SECRET!,
-      authorization: {
-        params: {
-          prompt: 'consent',
-          access_type: 'offline',
-          response_type: 'code',
-        },
-      },
     }),
   ],
 } satisfies NextAuthConfig);
