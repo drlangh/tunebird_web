@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 const KaraokeScore = () => {
-  const [lyrics, setLyrics] = useState([
-    { id: 1, text: 'I want to hold your hand', highlighted: false },
-    { id: 2, text: 'Oh please, say to me', highlighted: false },
-    { id: 3, text: 'You\'ll let me be your man', highlighted: false },
-  ]);
+  const [lyrics, setLyrics] = useState([]);
   const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    const fetchLyrics = async () => {
+      const response = await fetch('/api/lyrics');
+      const data = await response.json();
+      setLyrics(data);
+    };
+
+    fetchLyrics();
+  }, []);
 
   const handleMicrophoneInput = (input) => {
     // Process microphone input and update score

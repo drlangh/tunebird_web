@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 const GuessThatSnippet = () => {
   const [snippet, setSnippet] = useState({
@@ -10,6 +12,16 @@ const GuessThatSnippet = () => {
   });
   const [selectedOption, setSelectedOption] = useState('');
   const [freeResponse, setFreeResponse] = useState('');
+
+  useEffect(() => {
+    const fetchSnippet = async () => {
+      const response = await fetch('/api/snippet');
+      const data = await response.json();
+      setSnippet(data);
+    };
+
+    fetchSnippet();
+  }, []);
 
   const handleOptionChange = (e) => {
     setSelectedOption(e.target.value);

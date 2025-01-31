@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 const LyricsFill = () => {
-  const [lyrics, setLyrics] = useState([
-    { id: 1, text: 'I want to hold your ____', blank: true },
-    { id: 2, text: 'hand', blank: false },
-  ]);
+  const [lyrics, setLyrics] = useState([]);
   const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    const fetchLyrics = async () => {
+      const response = await fetch('/api/lyrics');
+      const data = await response.json();
+      setLyrics(data);
+    };
+
+    fetchLyrics();
+  }, []);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);

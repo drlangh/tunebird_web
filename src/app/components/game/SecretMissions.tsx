@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 const SecretMissions = () => {
   const [mission, setMission] = useState({
@@ -6,6 +8,16 @@ const SecretMissions = () => {
     description: 'Collect 2 songs from the 80s',
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchMission = async () => {
+      const response = await fetch('/api/mission');
+      const data = await response.json();
+      setMission(data);
+    };
+
+    fetchMission();
+  }, []);
 
   const handleAcceptMission = () => {
     console.log('Mission accepted:', mission);

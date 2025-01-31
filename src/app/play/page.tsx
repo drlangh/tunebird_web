@@ -1,3 +1,5 @@
+'use client';
+
 import { auth } from '@/auth';
 import MainContent from '../components/MainContent';
 import { useState, useEffect } from 'react';

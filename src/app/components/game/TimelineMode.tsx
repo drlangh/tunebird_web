@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 
 const TimelineMode = () => {
-  const [snippets, setSnippets] = useState([
-    { id: 1, title: 'Snippet 1', position: null },
-    { id: 2, title: 'Snippet 2', position: null },
-    { id: 3, title: 'Snippet 3', position: null },
-  ]);
+  const [snippets, setSnippets] = useState([]);
+
+  useEffect(() => {
+    const fetchSnippets = async () => {
+      const response = await fetch('/api/snippets');
+      const data = await response.json();
+      setSnippets(data);
+    };
+
+    fetchSnippets();
+  }, []);
 
   const handleDrop = (id, position) => {
     setSnippets((prevSnippets) =>

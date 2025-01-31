@@ -1,3 +1,5 @@
+'use client';
+
 import { signIn } from '@/auth';
 import Spotify from '@public/logos/spotify.svg';
 import { useState } from 'react';
