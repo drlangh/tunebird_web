@@ -2,18 +2,18 @@ import { signIn } from '@/auth';
 import Spotify from '@public/logos/spotify.svg';
 
 export default function LoginForm() {
-  // const handleJoinRoom = async () => {
-  //   const response = await fetch('/api/game/join', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({ roomId, playerName }),
-  //   });
+  const handleJoinRoom = async () => {
+    const response = await fetch('/api/game/join', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ roomId: 'room-id-placeholder', playerName: 'player-name-placeholder' }),
+    });
 
-  //   const data = await response.json();
-  //   // Handle the response data as needed
-  // };
+    const data = await response.json();
+    // Handle the response data as needed
+  };
 
   return (
     <div className="flex w-full h-fit py-2 flex-col items-center justify-center gap-4">
@@ -34,7 +34,7 @@ export default function LoginForm() {
       </form>
 
       <div className="w-full">
-        <button className="glass-button">Join a room</button>
+        <button className="glass-button" onClick={handleJoinRoom}>Join a room</button>
       </div>
     </div>
   );

@@ -18,6 +18,7 @@ const Scoreboard = () => {
         ))}
       </ul>
       <button className="main-button mt-4">Rematch</button>
+      <button className="main-button mt-4">Play Another Game</button>
     </div>
   );
 };

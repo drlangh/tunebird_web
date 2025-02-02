@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const gameRoom = await prisma.gameRoom.update({
         where: { id: roomId },
         data: {
-          state: 'STARTED',
+          state: 'active',
           startedAt: new Date(),
         },
         include: {

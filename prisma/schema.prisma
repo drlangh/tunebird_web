@@ -82,16 +82,18 @@ model VerificationToken {
 /// - Tracks game mode, rounds, and status
 /// - Contains scores and missions
 model Game {
-  id        String    @id @default(uuid())
-  hostId    String
-  host      User      @relation(fields: [hostId], references: [id], name: "GameHost")
-  players   User[]    @relation("GamePlayers")
-  mode      String
-  rounds    Int
-  status    String
-  scores    Score[]
-  missions  Mission[]
-  createdAt DateTime  @default(now())
+  id             String    @id @default(uuid())
+  hostId         String
+  host           User      @relation(fields: [hostId], references: [id], name: "GameHost")
+  players        User[]    @relation("GamePlayers")
+  mode           String
+  rounds         Int
+  status         String
+  numberOfPlayers Int
+  theme          String
+  scores         Score[]
+  missions       Mission[]
+  createdAt      DateTime  @default(now())
 }
 
 /// Score: Tracks points for players in games

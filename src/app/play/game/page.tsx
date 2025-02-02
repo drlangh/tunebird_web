@@ -6,6 +6,7 @@ const GameModeSelection = () => {
   const [selectedModes, setSelectedModes] = useState<string[]>([]);
   const [rounds, setRounds] = useState<number>(1);
   const [theme, setTheme] = useState<string>('');
+  const [numberOfPlayers, setNumberOfPlayers] = useState<number>(1);
 
   const handleModeChange = (mode: string) => {
     setSelectedModes((prevModes) =>
@@ -15,8 +16,27 @@ const GameModeSelection = () => {
     );
   };
 
-  const handleStartGame = () => {
-    // Logic to start the game
+  const handleStartGame = async () => {
+    const response = await fetch('/api/game', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        hostId: 'host-id-placeholder',
+        mode: selectedModes.join(', '),
+        rounds,
+        numberOfPlayers,
+        theme,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Game created with ID:', data.gameId);
+    } else {
+      console.error('Failed to create game');
+    }
   };
 
   return (
@@ -74,6 +94,17 @@ const GameModeSelection = () => {
             type="text"
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
+          />
+        </label>
+      </div>
+      <div className="flex flex-col items-start mb-4">
+        <label>
+          Number of Players:
+          <input
+            type="number"
+            value={numberOfPlayers}
+            onChange={(e) => setNumberOfPlayers(Number(e.target.value))}
+            min="1"
           />
         </label>
       </div>

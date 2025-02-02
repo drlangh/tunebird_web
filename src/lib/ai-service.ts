@@ -4,17 +4,19 @@ const BASE_URL = process.env.CLOUDFARE_BASE_URL;
 /**
  * Generate a secret mission for a music trivia game.
  * @param gameId The game ID.
+ * @param theme The game theme.
  * @returns The secret mission.
  * @throws If the HTTP request fails.
- * @example const mission = await generateMission('123');
+ * @example const mission = await generateMission('123', '80s Music');
  */
 export async function generateMission(
-  gameId: string
+  gameId: string,
+  theme: string
 ): Promise<string> {
   const url = BASE_URL + model;
 
   const prompt = `
-  Generate a secret mission for a music trivia game".
+  Generate a secret mission for a music trivia game with the theme "${theme}".
   `;
 
   const response = await fetch(url, {
