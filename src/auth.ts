@@ -3,14 +3,13 @@
  * Supports Spotify OAuth provider
  */
 import { PrismaAdapter } from '@auth/prisma-adapter';
+import { Pool } from '@neondatabase/serverless';
+import { PrismaNeon } from '@prisma/adapter-neon';
 import { PrismaClient } from '@prisma/client';
 import NextAuth from 'next-auth';
 import Spotify from 'next-auth/providers/spotify';
 
 import type { NextAuthConfig } from 'next-auth';
-
-import { Pool } from '@neondatabase/serverless';
-import { PrismaNeon } from '@prisma/adapter-neon';
 
 const neon = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -56,30 +55,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      */
     async jwt({ token, account }) {
       if (account) {
-        const expires_in = account.expires_in
-          ? Math.floor(Date.now() / 1000 + account.expires_in)
-          : undefined;
+        token.access_token = account.access_token;
+        token.expires_in = account.expires_in;
+        token.provider = account.provider;
+      }
+      return token;
+    },
 
-        return {
-          ...token,
-          access_token: account.access_token,
-          expires_at: expires_in,
-          refresh_token: account.refresh_token,
-        };
-      } else if (
-        typeof token.expires_at === 'number' &&
-        Date.now() / 1000 < token.expires_at
+    /**
+     * Session callback for session object generation
+     * @param param0 - Object containing session, token, and account objects
+     * @returns Session object with token
+     */
+    async session({ session, token }) {
+      const [spotifyAccount] = await prisma.account.findMany({
+        where: { userId: session.user.id, provider: 'spotify' },
+      });
+
+      if (
+        spotifyAccount &&
+        typeof spotifyAccount.expires_at === 'number' &&
+        spotifyAccount.refresh_token &&
+        Date.now() < spotifyAccount.expires_at * 1000
       ) {
-        return token;
-      } else {
-        if (
-          !token.refresh_token ||
-          typeof token.refresh_token !== 'string'
-        ) {
-          console.error('Missing or invalid refresh_token');
-          return { ...token, error: 'RefreshTokenError' };
-        }
-
         try {
           const response = await fetch(
             'https://accounts.spotify.com/api/token',
@@ -93,36 +91,40 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               },
               body: new URLSearchParams({
                 grant_type: 'refresh_token',
-                refresh_token: token.refresh_token,
+                refresh_token: spotifyAccount.refresh_token,
               }),
             }
           );
 
-          const newTokens = await response.json();
-          if (!response.ok) throw newTokens;
+          const tokensOrError = await response.json();
 
-          return {
-            ...token,
-            access_token: newTokens.access_token,
-            expires_at: Math.floor(
-              Date.now() / 1000 + newTokens.expires_in
-            ),
-            refresh_token:
-              newTokens.refresh_token || token.refresh_token, // Si no devuelve uno nuevo, conservar el anterior
+          if (!response.ok) throw tokensOrError;
+
+          const newTokens = tokensOrError as {
+            access_token: string;
+            expires_in: number;
+            refresh_token?: string;
           };
+
+          await prisma.account.update({
+            data: {
+              access_token: newTokens.access_token,
+              expires_at: newTokens.expires_in,
+              refresh_token:
+                newTokens.refresh_token ||
+                spotifyAccount.refresh_token,
+            },
+            where: {
+              provider_providerAccountId: {
+                provider: 'spotify',
+                providerAccountId: spotifyAccount.providerAccountId,
+              },
+            },
+          });
         } catch (error) {
           console.error('Error refreshing access_token', error);
-          return { ...token, error: 'RefreshTokenError' };
         }
       }
-    },
-
-    /**
-     * Session callback for session object generation
-     * @param param0 - Object containing session, token, and account objects
-     * @returns Session object with token
-     */
-    async session({ session, token }) {
       return {
         ...session,
         access_token: token.access_token,
@@ -130,17 +132,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       };
     },
   },
-
   providers: [
     /**
      * Spotify OAuth provider configuration
      * Requires SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables
      */
     Spotify({
-      authorization:
-        'https://accounts.spotify.com/authorize?scope=user-read-email,playlist-read-private,playlist-modify-private,playlist-modify-public,user-read-playback-state,user-modify-playback-state,user-read-currently-playing,streaming,user-read-private',
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
+      authorization: {
+        url: 'https://accounts.spotify.com/authorize',
+        params: {
+          scope:
+            'user-read-email,playlist-read-private,playlist-modify-private,playlist-modify-public,user-read-playback-state,user-modify-playback-state,user-read-currently-playing,streaming,user-read-private',
+          response_type: 'code',
+          show_dialog: false,
+        },
+      },
     }),
   ],
 } satisfies NextAuthConfig);
