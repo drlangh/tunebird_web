@@ -1,8 +1,4 @@
-// 'use client';
-
 import { signOut } from '@/auth';
-
-type GameState = any;
 
 export default function Play() {
   // const [gameState, setGameState] = useState<GameState | null>(null);
@@ -25,57 +21,57 @@ export default function Play() {
   //   };
   // }, []);
 
-  const handleCreateRoom = async () => {
-    const response = await fetch('/api/game/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        settings: { rounds: 5, mode: 'Guess That Snippet' },
-      }),
-    });
+  // const handleCreateRoom = async () => {
+  //   const response = await fetch('/api/game/create', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       settings: { rounds: 5, mode: 'Guess That Snippet' },
+  //     }),
+  //   });
 
-    const data = await response.json();
-    setRoomId(data.roomId);
-  };
+  //   const data = await response.json();
+  //   setRoomId(data.roomId);
+  // };
 
-  const handleJoinRoom = async () => {
-    const response = await fetch('/api/game/join', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ roomId, playerName }),
-    });
+  // const handleJoinRoom = async () => {
+  //   const response = await fetch('/api/game/join', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ roomId, playerName }),
+  //   });
 
-    const data = await response.json();
-    setGameState(data.gameRoom);
-  };
+  //   const data = await response.json();
+  //   setGameState(data.gameRoom);
+  // };
 
-  const handleStartGame = async () => {
-    await fetch('/api/game/start', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ roomId }),
-    });
-  };
+  // const handleStartGame = async () => {
+  //   await fetch('/api/game/start', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ roomId }),
+  //   });
+  // };
 
-  const handleSubmitAnswer = async (answer) => {
-    await fetch('/api/game/submit-answer', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        roomId,
-        playerId: session.token.sub,
-        answer,
-      }),
-    });
-  };
+  // const handleSubmitAnswer = async (answer) => {
+  //   await fetch('/api/game/submit-answer', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       roomId,
+  //       playerId: session.token.sub,
+  //       answer,
+  //     }),
+  //   });
+  // };
 
   return (
     <div>
@@ -88,6 +84,8 @@ export default function Play() {
       >
         <button>LOGOUT</button>
       </form>
+      <button>Start Game</button>
+
       {/* <button>Create Room</button>
       <input
         type="text"

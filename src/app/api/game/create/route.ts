@@ -1,24 +1,68 @@
-import { v4 as uuidv4 } from 'uuid';
-import prisma from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { Server } from 'socket.io';
+import { generateMission } from '@/lib/ai-service';
 
-import type { NextRequest } from 'next/server';
+let io: Server | null = null;
 
-export async function POST(request: NextRequest) {
-  //   try {
-  //     const { settings } = await request.json();
-  //     const gameRoom = await prisma.game.create({
-  //       data: {
-  //         // settings,
-  //       },
-  //     });
-  //     return Response.json({
-  //       gameRoomId: gameRoom.id,
-  //       gameRoom,
-  //     });
-  //   } catch (error) {
-  //     return Response.json(
-  //       { error: 'Failed to create game room' },
-  //       { status: 500 }
-  //     );
-  //   }
+export async function POST(req: Request) {
+  try {
+    const { hostId, mode, rounds } = await req.json();
+
+    if (!hostId || !mode || !rounds) {
+      return NextResponse.json(
+        { error: 'Faltan datos obligatorios' },
+        { status: 400 }
+      );
+    }
+
+    const game = await prisma.game.create({
+      data: {
+        hostId,
+        mode,
+        rounds,
+        status: 'waiting',
+      },
+    });
+
+    if (!io) {
+      io = new Server(3001, {
+        cors: { origin: '*' },
+      });
+
+      io.on('connection', (socket) => {
+        socket.on('joinGame', async (gameId, userId) => {
+          const game = await prisma.game.findUnique({
+            where: { id: gameId },
+          });
+
+          if (game) {
+            await prisma.game.update({
+              where: { id: gameId },
+              data: { players: { connect: { id: userId } } },
+            });
+
+            io?.emit('playerJoined', { gameId, userId });
+          }
+        });
+
+        socket.on('startGame', async (gameId) => {
+          await prisma.game.update({
+            where: { id: gameId },
+            data: { status: 'active' },
+          });
+
+          const missions = await generateMission(gameId);
+          io?.emit('gameStarted', { gameId, missions });
+        });
+      });
+    }
+
+    return NextResponse.json({ gameId: game.id });
+  } catch (error) {
+    return NextResponse.json(
+      { error: `Error al crear la partida: ${error}` },
+      { status: 500 }
+    );
+  }
 }
