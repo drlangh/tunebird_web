@@ -17,6 +17,8 @@ CREATE TABLE "Game" (
     "mode" TEXT NOT NULL,
     "rounds" INTEGER NOT NULL,
     "status" TEXT NOT NULL,
+    "numberOfPlayers" INTEGER NOT NULL,
+    "theme" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Game_pkey" PRIMARY KEY ("id")

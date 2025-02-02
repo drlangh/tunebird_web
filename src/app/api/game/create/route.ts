@@ -7,9 +7,9 @@ let io: Server | null = null;
 
 export async function POST(req: Request) {
   try {
-    const { hostId, mode, rounds } = await req.json();
+    const { hostId, mode, rounds, numberOfPlayers, theme } = await req.json();
 
-    if (!hostId || !mode || !rounds) {
+    if (!hostId || !mode || !rounds || !numberOfPlayers || !theme) {
       return NextResponse.json(
         { error: 'Faltan datos obligatorios' },
         { status: 400 }
@@ -21,6 +21,8 @@ export async function POST(req: Request) {
         hostId,
         mode,
         rounds,
+        numberOfPlayers,
+        theme,
         status: 'waiting',
       },
     });

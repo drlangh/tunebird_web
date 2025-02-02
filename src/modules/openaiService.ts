@@ -6,10 +6,10 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-export async function generateMission(prompt: string): Promise<string> {
+export async function generateMission(prompt: string, theme: string): Promise<string> {
   const response = await openai.createCompletion({
     model: 'text-davinci-003',
-    prompt,
+    prompt: `Generate a secret mission for a music trivia game with the theme "${theme}". ${prompt}`,
     max_tokens: 100,
   });
 

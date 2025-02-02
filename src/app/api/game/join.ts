@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
+import { io } from '@/server/socket';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -20,6 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           players: true,
         },
       });
+
+      io.to(roomId).emit('playerJoined', { roomId, playerName });
 
       res.status(200).json({ gameRoom });
     } catch (error) {
